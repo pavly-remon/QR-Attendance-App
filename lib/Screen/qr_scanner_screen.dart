@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_attendance/Provider/googlesheets.dart';
 import 'package:qr_attendance/Provider/member.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
@@ -193,12 +194,28 @@ class _QRScreenState extends State<QRScreen> {
   }
 
   void _onQRViewCreated(QRViewController controller) {
+    final member = Provider.of<Domain>(context);
+    var index;
     setState(() {
       this.controller = controller;
     });
     controller.scannedDataStream.listen((scanData) {
       setState(() {
         result = scanData;
+        if (member.isScanned(result!.code)) {
+          member.updateData(result!.code);
+          index = member
+              .getMembers()
+              .where((element) => result!.code == element.id);
+          UserSheetsApi.update(
+                  id: result!.code, member: member.getMembers()[index].toJson())
+              .then((value) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('Done'),
+              duration: Duration(seconds: 1),
+            ));
+          });
+        }
       });
     });
   }
