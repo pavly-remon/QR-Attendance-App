@@ -45,4 +45,12 @@ class UserSheetsApi {
       return <Member>[];
     }
   }
+
+  static Future<bool> update({
+    required String id,
+    required Map<String, dynamic> member,
+  }) async {
+    if (_sheet == null) return false;
+    return _sheet!.values.map.insertRowByKey(id, member);
+  }
 }
