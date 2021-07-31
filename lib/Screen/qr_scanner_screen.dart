@@ -29,13 +29,18 @@ class _QRScreenState extends State<QRScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Provider.of<Domain>(context).fetchData();
     final size = MediaQuery.of(context).size;
     final member = Provider.of<Domain>(context);
-    print(member.getMembers());
     return Scaffold(
       body: Stack(
         children: <Widget>[
-          Expanded(flex: 4, child: _buildQrView(context)),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(flex: 4, child: _buildQrView(context)),
+            ],
+          ),
           Center(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
