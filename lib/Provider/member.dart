@@ -17,7 +17,7 @@ class Member {
     return Member(
       id: json['ID'],
       name: json['Name'],
-      attendance: json['Attendance'],
+      attendance: int.parse(json['Attendance']),
     );
   }
 
