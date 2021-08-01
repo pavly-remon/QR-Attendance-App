@@ -12,18 +12,27 @@ class StartScreen extends StatefulWidget {
 }
 
 class _StartScreenState extends State<StartScreen> {
+  bool _isInit = true;
   bool _isReady = false;
   void initState() {
     super.initState();
   }
 
   @override
-  Widget build(BuildContext context) {
-    Provider.of<Domain>(context).fetchData().then((value) {
-      setState(() {
-        _isReady = true;
+  void didChangeDependencies() {
+    if (_isInit) {
+      Provider.of<Domain>(context).fetchData().then((value) {
+        setState(() {
+          _isReady = true;
+          _isInit = false;
+        });
       });
-    });
+    }
+    super.didChangeDependencies();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
         drawer: Drawer(),
         appBar: AppBar(

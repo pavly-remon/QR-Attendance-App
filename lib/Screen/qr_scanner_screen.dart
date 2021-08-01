@@ -20,6 +20,12 @@ class _QRScreenState extends State<QRScreen> {
   // In order to get hot reload to work we need to pause the camera if the platform
   // is android, or resume the camera if the platform is iOS.
   @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+  }
+
+  @override
   void reassemble() {
     super.reassemble();
     if (Platform.isAndroid) {
@@ -30,9 +36,8 @@ class _QRScreenState extends State<QRScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<Domain>(context).fetchData();
-    final size = MediaQuery.of(context).size;
     final member = Provider.of<Domain>(context);
+    final size = MediaQuery.of(context).size;
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -202,6 +207,7 @@ class _QRScreenState extends State<QRScreen> {
     controller.scannedDataStream.listen((scanData) {
       setState(() {
         result = scanData;
+        print(member.getMembers());
         if (member.isScanned(result!.code)) {
           member.updateData(result!.code);
           index = member
