@@ -21,7 +21,6 @@ class _QRScreenState extends State<QRScreen> {
   // is android, or resume the camera if the platform is iOS.
   @override
   void didChangeDependencies() {
-    // TODO: implement didChangeDependencies
     super.didChangeDependencies();
   }
 
@@ -36,13 +35,8 @@ class _QRScreenState extends State<QRScreen> {
 
   @override
   Widget build(BuildContext context) {
-<<<<<<< HEAD
     final size = MediaQuery.of(context).size;
-    final member = Provider.of<Domain>(context, listen: false);
-=======
     final member = Provider.of<Domain>(context);
-    final size = MediaQuery.of(context).size;
->>>>>>> 48311f7de45f43fd4b34b2ccba4bb37694810801
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -213,7 +207,6 @@ class _QRScreenState extends State<QRScreen> {
       setState(() {
         result = scanData;
         print(member.getMembers());
-<<<<<<< HEAD
         if (member.getName(result!.code) != 'Unknown') {
           if (member.isScanned(result!.code)) {
             member.updateData(result!.code);
@@ -230,21 +223,21 @@ class _QRScreenState extends State<QRScreen> {
               ));
             });
           }
-=======
-        if (member.isScanned(result!.code)) {
-          member.updateData(result!.code);
-          index = member
-              .getMembers()
-              .where((element) => result!.code == element.id);
-          UserSheetsApi.update(
-                  id: result!.code, member: member.getMembers()[index].toJson())
-              .then((value) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text('Done'),
-              duration: Duration(seconds: 1),
-            ));
-          });
->>>>>>> 48311f7de45f43fd4b34b2ccba4bb37694810801
+          if (member.isScanned(result!.code)) {
+            member.updateData(result!.code);
+            index = member
+                .getMembers()
+                .where((element) => result!.code == element.id);
+            UserSheetsApi.update(
+                    id: result!.code,
+                    member: member.getMembers()[index].toJson())
+                .then((value) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Done'),
+                duration: Duration(seconds: 1),
+              ));
+            });
+          }
         }
       });
     });

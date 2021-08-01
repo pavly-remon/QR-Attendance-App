@@ -25,10 +25,7 @@ class _StartScreenState extends State<StartScreen> {
       Provider.of<Domain>(context).fetchData().then((value) {
         setState(() {
           _isReady = true;
-<<<<<<< HEAD
-=======
           _isInit = false;
->>>>>>> 48311f7de45f43fd4b34b2ccba4bb37694810801
         });
       });
     }
