@@ -30,9 +30,8 @@ class _QRScreenState extends State<QRScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<Domain>(context).fetchData();
     final size = MediaQuery.of(context).size;
-    final member = Provider.of<Domain>(context);
+    final member = Provider.of<Domain>(context, listen: false);
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -194,7 +193,7 @@ class _QRScreenState extends State<QRScreen> {
   }
 
   void _onQRViewCreated(QRViewController controller) {
-    final member = Provider.of<Domain>(context);
+    final member = Provider.of<Domain>(context, listen: false);
     var index;
     setState(() {
       this.controller = controller;
@@ -202,19 +201,23 @@ class _QRScreenState extends State<QRScreen> {
     controller.scannedDataStream.listen((scanData) {
       setState(() {
         result = scanData;
-        if (member.isScanned(result!.code)) {
-          member.updateData(result!.code);
-          index = member
-              .getMembers()
-              .where((element) => result!.code == element.id);
-          UserSheetsApi.update(
-                  id: result!.code, member: member.getMembers()[index].toJson())
-              .then((value) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text('Done'),
-              duration: Duration(seconds: 1),
-            ));
-          });
+        print(member.getMembers());
+        if (member.getName(result!.code) != 'Unknown') {
+          if (member.isScanned(result!.code)) {
+            member.updateData(result!.code);
+            index = member
+                .getMembers()
+                .where((element) => result!.code == element.id);
+            UserSheetsApi.update(
+                    id: result!.code,
+                    member: member.getMembers()[index].toJson())
+                .then((value) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Done'),
+                duration: Duration(seconds: 1),
+              ));
+            });
+          }
         }
       });
     });
