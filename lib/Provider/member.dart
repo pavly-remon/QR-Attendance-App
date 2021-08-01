@@ -31,45 +31,20 @@ class Member {
 }
 
 class Domain with ChangeNotifier {
-  List<Member> _members = [];
-
-  List<Member> getMembers() {
-    return _members;
-  }
+  List<Member> members = [];
 
   Future<void> fetchData() async {
     await UserSheetsApi.getAll().then((values) {
-      _members = values;
+      members = values;
       notifyListeners();
     });
   }
 
   String getName(String code) {
-    final index = _members.indexWhere((element) => element.id == code);
+    final index = members.indexWhere((element) => element.id == code);
     if (index == -1)
       return 'Unknown';
     else
-      return _members[index].name;
-  }
-
-  bool isScanned(String code) {
-    final index = _members.indexWhere((element) => element.id == code);
-    if (_members[index].scanned)
-      return true;
-    else {
-      _members[index].scanned = true;
-      return false;
-    }
-  }
-
-  bool updateData(String code) {
-    final index = _members.indexWhere((element) => element.id == code);
-    if (index == -1)
-      return false;
-    else {
-      _members[index].attendance += 1;
-      notifyListeners();
-      return true;
-    }
+      return members[index].name;
   }
 }

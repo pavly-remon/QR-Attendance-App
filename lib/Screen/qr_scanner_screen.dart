@@ -20,6 +20,12 @@ class _QRScreenState extends State<QRScreen> {
   // In order to get hot reload to work we need to pause the camera if the platform
   // is android, or resume the camera if the platform is iOS.
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
   }
@@ -35,15 +41,16 @@ class _QRScreenState extends State<QRScreen> {
 
   @override
   Widget build(BuildContext context) {
+    List<Member> memberList = Provider.of<Domain>(context).members;
     final size = MediaQuery.of(context).size;
-    final member = Provider.of<Domain>(context);
+    final member = Provider.of<Domain>(context, listen: false);
     return Scaffold(
       body: Stack(
         children: <Widget>[
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Expanded(flex: 4, child: _buildQrView(context)),
+              Expanded(flex: 4, child: _buildQrView(context, memberList)),
             ],
           ),
           Center(
@@ -177,7 +184,7 @@ class _QRScreenState extends State<QRScreen> {
     );
   }
 
-  Widget _buildQrView(BuildContext context) {
+  Widget _buildQrView(BuildContext context, var member) {
     // For this example we check how width or tall the device is and change the scanArea and overlay accordingly.
     var scanArea = (MediaQuery.of(context).size.width < 400 ||
             MediaQuery.of(context).size.height < 400)
@@ -187,7 +194,9 @@ class _QRScreenState extends State<QRScreen> {
     // we need to listen for Flutter SizeChanged notification and update controller
     return QRView(
       key: qrKey,
-      onQRViewCreated: _onQRViewCreated,
+      onQRViewCreated: (_) {
+        _onQRViewCreated(_, member);
+      },
       overlay: QrScannerOverlayShape(
           borderColor: Colors.red,
           borderRadius: 10,
@@ -197,8 +206,7 @@ class _QRScreenState extends State<QRScreen> {
     );
   }
 
-  void _onQRViewCreated(QRViewController controller) {
-    final member = Provider.of<Domain>(context, listen: false);
+  void _onQRViewCreated(QRViewController controller, List<Member> memberList) {
     var index;
     setState(() {
       this.controller = controller;
@@ -206,31 +214,12 @@ class _QRScreenState extends State<QRScreen> {
     controller.scannedDataStream.listen((scanData) {
       setState(() {
         result = scanData;
-        print(member.getMembers());
-        if (member.getName(result!.code) != 'Unknown') {
-          if (member.isScanned(result!.code)) {
-            member.updateData(result!.code);
-            index = member
-                .getMembers()
-                .where((element) => result!.code == element.id);
+        index = memberList.indexWhere((element) => result!.code == element.id);
+        if (index != -1) {
+          if (!memberList[index].scanned) {
+            updateData(memberList[index]);
             UserSheetsApi.update(
-                    id: result!.code,
-                    member: member.getMembers()[index].toJson())
-                .then((value) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text('Done'),
-                duration: Duration(seconds: 1),
-              ));
-            });
-          }
-          if (member.isScanned(result!.code)) {
-            member.updateData(result!.code);
-            index = member
-                .getMembers()
-                .where((element) => result!.code == element.id);
-            UserSheetsApi.update(
-                    id: result!.code,
-                    member: member.getMembers()[index].toJson())
+                    id: result!.code, member: memberList[index].toJson())
                 .then((value) {
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content: Text('Done'),
@@ -241,6 +230,11 @@ class _QRScreenState extends State<QRScreen> {
         }
       });
     });
+  }
+
+  void updateData(Member member) {
+    member.attendance += 1;
+    member.scanned = true;
   }
 
   @override

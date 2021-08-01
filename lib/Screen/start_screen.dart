@@ -14,7 +14,7 @@ class StartScreen extends StatefulWidget {
 class _StartScreenState extends State<StartScreen> {
   bool _isInit = true;
   bool _isReady = false;
-
+  List<Member> memberList = [];
   void initState() {
     super.initState();
   }
@@ -26,6 +26,7 @@ class _StartScreenState extends State<StartScreen> {
         setState(() {
           _isReady = true;
           _isInit = false;
+          // memberList = Provider.of<Domain>(context, listen: false).members;
         });
       });
     }
@@ -56,7 +57,7 @@ class _StartScreenState extends State<StartScreen> {
                     Container(
                       height: 5,
                     ),
-                    Text('Loading...'),
+                    Text('Loading Data')
                   ],
                 )
               : InkWell(
