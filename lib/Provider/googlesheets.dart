@@ -36,14 +36,8 @@ class UserSheetsApi {
 
   static Future<List<Member>> getAll() async {
     if (_sheet == null) return <Member>[];
-    try {
-      final members = await _sheet!.values.map.allRows();
-      return members == null
-          ? <Member>[]
-          : members.map(Member.fromJson).toList();
-    } catch (e) {
-      return <Member>[];
-    }
+    final members = await _sheet!.values.map.allRows();
+    return members == null ? <Member>[] : members.map(Member.fromJson).toList();
   }
 
   static Future<bool> update({

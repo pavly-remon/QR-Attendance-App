@@ -1,4 +1,4 @@
-package com.example.qr_attendance
+package com.prrag.qr_attendance
 
 import io.flutter.embedding.android.FlutterActivity
 
