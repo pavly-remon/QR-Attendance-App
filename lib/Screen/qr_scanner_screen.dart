@@ -16,17 +16,16 @@ class _QRScreenState extends State<QRScreen> {
   Barcode? result;
   QRViewController? controller;
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
+  List<Member> memberList = [];
 
-  // In order to get hot reload to work we need to pause the camera if the platform
-  // is android, or resume the camera if the platform is iOS.
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
   @override
   void didChangeDependencies() {
+    memberList = Provider.of<Domain>(context).members;
     super.didChangeDependencies();
   }
 
@@ -147,30 +146,6 @@ class _QRScreenState extends State<QRScreen> {
                               ],
                             ),
                           ),
-                          // Row(
-                          //   mainAxisAlignment: MainAxisAlignment.center,
-                          //   crossAxisAlignment: CrossAxisAlignment.center,
-                          //   children: <Widget>[
-                          //     Container(
-                          //       margin: EdgeInsets.all(8),
-                          //       child: ElevatedButton(
-                          //         onPressed: () async {
-                          //           await controller?.pauseCamera();
-                          //         },
-                          //         child: Text('pause', style: TextStyle(fontSize: 20)),
-                          //       ),
-                          //     ),
-                          //     Container(
-                          //       margin: EdgeInsets.all(8),
-                          //       child: ElevatedButton(
-                          //         onPressed: () async {
-                          //           await controller?.resumeCamera();
-                          //         },
-                          //         child: Text('resume', style: TextStyle(fontSize: 20)),
-                          //       ),
-                          //     )
-                          //   ],
-                          // ),
                         ],
                       ),
                     ),
@@ -207,39 +182,41 @@ class _QRScreenState extends State<QRScreen> {
   }
 
   void _onQRViewCreated(QRViewController controller, List<Member> memberList) {
-    var index;
     setState(() {
       this.controller = controller;
     });
     controller.scannedDataStream.listen((scanData) {
       setState(() {
         result = scanData;
-        index = memberList.indexWhere((element) => result!.code == element.id);
-        if (index != -1) {
-          if (!memberList[index].scanned) {
-            updateData(memberList[index]);
-            UserSheetsApi.update(
-                    id: result!.code, member: memberList[index].toJson())
-                .then((value) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text('Done'),
-                duration: Duration(seconds: 1),
-              ));
-            });
-          }
-        }
+        processCode(context, result!.code, memberList);
       });
     });
-  }
-
-  void updateData(Member member) {
-    member.attendance += 1;
-    member.scanned = true;
   }
 
   @override
   void dispose() {
     controller?.dispose();
     super.dispose();
+  }
+}
+
+void processCode(BuildContext context, String code, List<Member> memberList) {
+  var index;
+  var headers = UserSheetsApi.headerRow;
+  String now = UserSheetsApi.now;
+  index = memberList.indexWhere((element) => code == element.id);
+  if (index != -1) {
+    if (!memberList[index].attendance.containsKey(now)) {
+      UserSheetsApi.insertValue('O', headers.length + 1, index + 2)
+          .then((value) {
+        memberList[index].attendance[now] = "O";
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Done'),
+            duration: Duration(seconds: 1),
+          ),
+        );
+      });
+    }
   }
 }

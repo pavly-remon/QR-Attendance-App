@@ -4,29 +4,30 @@ import 'package:qr_attendance/Provider/googlesheets.dart';
 class Member {
   String id = '';
   String name;
-  int attendance;
-  bool scanned;
+  Map<String, String> attendance;
 
   Member({
     this.id = '',
     required this.name,
     required this.attendance,
-    this.scanned = false,
   });
   static Member fromJson(Map<String, dynamic> json) {
+    String id = json['ID'];
+    String name = json['Name'];
+    json.remove('ID');
+    json.remove('Name');
     return Member(
-      id: json['ID'],
-      name: json['Name'],
-      attendance: int.parse(json['Attendance']),
+      id: id,
+      name: name,
+      attendance: json as Map<String, String>,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'ID': this.id,
-      'Name': this.name,
-      'Attendance': this.attendance,
-    };
+    Map<String, String> json = this.attendance;
+    json['ID'] = this.id;
+    json['Name'] = this.name;
+    return json;
   }
 }
 

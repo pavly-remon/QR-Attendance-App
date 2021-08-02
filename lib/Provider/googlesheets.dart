@@ -1,4 +1,5 @@
 import 'package:gsheets/gsheets.dart';
+import 'package:intl/intl.dart';
 import 'package:qr_attendance/Provider/member.dart';
 
 class UserSheetsApi {
@@ -19,10 +20,28 @@ class UserSheetsApi {
   static final _spreadsheetId = '1VzLyjTqM6a61YrzEiNnFMYYeq6ocSvWB2GoGMWUx9dk';
   static final _gsheets = GSheets(_credentials);
   static Worksheet? _sheet;
+  static String now = DateFormat("dd-MM-yyyy").format(DateTime.now());
+  static List<String> headerRow = [];
 
   static Future<void> init() async {
     final spreasheet = await _gsheets.spreadsheet(_spreadsheetId);
     _sheet = await _getWorkSheet(spreasheet, title: 'e3dady');
+    updateHeaders();
+  }
+
+  static Future<void> insertValue(String data, int col, int row) async {
+    await _sheet!.values.insertValue(data, column: col, row: row);
+  }
+
+  static Future<void> updateHeaders() async {
+    await _sheet!.values.row(1).then((value) {
+      if (!value.contains(now)) {
+        headerRow = value;
+      } else {
+        return;
+      }
+    });
+    await _sheet!.values.insertValue(now, column: headerRow.length + 1, row: 1);
   }
 
   static Future<Worksheet> _getWorkSheet(Spreadsheet spreasheet,
@@ -44,6 +63,7 @@ class UserSheetsApi {
     required String id,
     required Map<String, dynamic> member,
   }) async {
+    print(member);
     if (_sheet == null) return false;
     return _sheet!.values.map.insertRowByKey(id, member);
   }
