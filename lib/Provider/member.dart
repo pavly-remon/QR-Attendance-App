@@ -17,15 +17,9 @@ class Member {
     json.remove('ID');
     json.remove('Name');
     return Member(
-<<<<<<< HEAD
       id: id,
       name: name,
       attendance: json as Map<String, String>,
-=======
-      id: json['ID'],
-      name: json['Name'],
-      attendance: int.parse(json['Attendance']),
->>>>>>> origin/main
     );
   }
 

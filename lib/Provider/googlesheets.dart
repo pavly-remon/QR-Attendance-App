@@ -22,6 +22,7 @@ class UserSheetsApi {
   static Worksheet? _sheet;
   static String now = DateFormat("dd-MM-yyyy").format(DateTime.now());
   static List<String> headerRow = [];
+
   static Future<void> init() async {
     final spreasheet = await _gsheets.spreadsheet(_spreadsheetId);
     _sheet = await _getWorkSheet(spreasheet, title: 'e3dady');
@@ -55,10 +56,6 @@ class UserSheetsApi {
   static Future<List<Member>> getAll() async {
     if (_sheet == null) return <Member>[];
     final members = await _sheet!.values.map.allRows();
-<<<<<<< HEAD
-    print(members);
-=======
->>>>>>> origin/main
     return members == null ? <Member>[] : members.map(Member.fromJson).toList();
   }
 

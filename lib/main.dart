@@ -4,12 +4,10 @@ import 'package:qr_attendance/Screen/qr_scanner_screen.dart';
 import 'package:qr_attendance/Screen/start_screen.dart';
 
 import 'Provider/member.dart';
-import 'Provider/googlesheets.dart';
 import 'Screen/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await UserSheetsApi.init();
   runApp(MyApp());
 }
 

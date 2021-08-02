@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:qr_attendance/Provider/googlesheets.dart';
 import 'package:qr_attendance/Screen/start_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -16,6 +17,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void initState() {
+    UserSheetsApi.init();
     _animationController =
         AnimationController(vsync: this, duration: Duration(seconds: 2));
     _animationController.repeat(reverse: true);
@@ -42,7 +44,7 @@ class _SplashScreenState extends State<SplashScreen>
           child: Padding(
             padding: const EdgeInsets.fromLTRB(10, 15, 10, 5),
             child: Image.asset(
-              'assets/Splash.png',
+              'assets/images/Splash.png',
             ),
           ),
           decoration: BoxDecoration(
@@ -50,7 +52,7 @@ class _SplashScreenState extends State<SplashScreen>
               color: Color.fromARGB(255, 27, 28, 30),
               boxShadow: [
                 BoxShadow(
-                    color: Color.fromARGB(130, 237, 125, 58),
+                    color: Colors.yellowAccent,
                     blurRadius: _animation.value,
                     spreadRadius: _animation.value)
               ]),
