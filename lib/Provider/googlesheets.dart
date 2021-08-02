@@ -26,7 +26,6 @@ class UserSheetsApi {
   static Future<void> init() async {
     final spreasheet = await _gsheets.spreadsheet(_spreadsheetId);
     _sheet = await _getWorkSheet(spreasheet, title: 'e3dady');
-    updateHeaders();
   }
 
   static Future<void> insertValue(String data, int col, int row) async {

@@ -206,7 +206,8 @@ void processCode(BuildContext context, String code, List<Member> memberList) {
   String now = UserSheetsApi.now;
   index = memberList.indexWhere((element) => code == element.id);
   if (index != -1) {
-    if (!memberList[index].attendance.containsKey(now)) {
+    if (!memberList[index].scanned) {
+      memberList[index].scanned = true;
       UserSheetsApi.insertValue('O', headers.length + 1, index + 2)
           .then((value) {
         memberList[index].attendance[now] = "O";
