@@ -12,15 +12,28 @@ class StartScreen extends StatefulWidget {
 
 class _StartScreenState extends State<StartScreen> {
   bool _isReady = false;
+  List<Member> memberList = [];
   void initState() {
     super.initState();
   }
 
   @override
   void didChangeDependencies() {
+<<<<<<< HEAD
     Future.delayed(Duration.zero, () {
       fetchData();
     });
+=======
+    if (_isInit) {
+      Provider.of<Domain>(context).fetchData().then((value) {
+        setState(() {
+          _isReady = true;
+          _isInit = false;
+          // memberList = Provider.of<Domain>(context, listen: false).members;
+        });
+      });
+    }
+>>>>>>> origin/main
     super.didChangeDependencies();
   }
 
@@ -38,6 +51,7 @@ class _StartScreenState extends State<StartScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
+<<<<<<< HEAD
       ),
       body: Center(
         child: !_isReady
@@ -68,6 +82,38 @@ class _StartScreenState extends State<StartScreen> {
                         child: Text(
                           'Start',
                           style: TextStyle(color: Colors.white, fontSize: 20),
+=======
+        body: Center(
+          child: !_isReady
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(),
+                    Container(
+                      height: 5,
+                    ),
+                    Text('Loading Data')
+                  ],
+                )
+              : InkWell(
+                  splashColor: Colors.white,
+                  child: CupertinoButton(
+                    color: Colors.blueAccent,
+                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                    onPressed: () {
+                      Navigator.of(context).pushNamed(QRScreen.routeName);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Container(
+                        height: 20,
+                        width: 60,
+                        child: Center(
+                          child: Text(
+                            'Start',
+                            style: TextStyle(color: Colors.white, fontSize: 20),
+                          ),
+>>>>>>> origin/main
                         ),
                       ),
                     ),

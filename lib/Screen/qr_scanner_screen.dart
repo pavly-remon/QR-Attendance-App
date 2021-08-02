@@ -24,8 +24,17 @@ class _QRScreenState extends State<QRScreen> {
   }
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
   void didChangeDependencies() {
+<<<<<<< HEAD
     memberList = Provider.of<Domain>(context).members;
+=======
+>>>>>>> origin/main
     super.didChangeDependencies();
   }
 
@@ -40,6 +49,10 @@ class _QRScreenState extends State<QRScreen> {
 
   @override
   Widget build(BuildContext context) {
+<<<<<<< HEAD
+=======
+    List<Member> memberList = Provider.of<Domain>(context).members;
+>>>>>>> origin/main
     final size = MediaQuery.of(context).size;
     final member = Provider.of<Domain>(context, listen: false);
     return Scaffold(
@@ -181,15 +194,41 @@ class _QRScreenState extends State<QRScreen> {
   }
 
   void _onQRViewCreated(QRViewController controller, List<Member> memberList) {
+<<<<<<< HEAD
+=======
+    var index;
+>>>>>>> origin/main
     setState(() {
       this.controller = controller;
     });
     controller.scannedDataStream.listen((scanData) {
       setState(() {
         result = scanData;
+<<<<<<< HEAD
         processCode(context, result!.code, memberList);
+=======
+        index = memberList.indexWhere((element) => result!.code == element.id);
+        if (index != -1) {
+          if (!memberList[index].scanned) {
+            updateData(memberList[index]);
+            UserSheetsApi.update(
+                    id: result!.code, member: memberList[index].toJson())
+                .then((value) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Done'),
+                duration: Duration(seconds: 1),
+              ));
+            });
+          }
+        }
+>>>>>>> origin/main
       });
     });
+  }
+
+  void updateData(Member member) {
+    member.attendance += 1;
+    member.scanned = true;
   }
 
   @override
