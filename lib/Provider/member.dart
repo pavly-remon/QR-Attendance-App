@@ -5,11 +5,13 @@ class Member {
   String id = '';
   String name;
   Map<String, String> attendance;
+  bool scanned;
 
   Member({
     this.id = '',
     required this.name,
     required this.attendance,
+    this.scanned = false,
   });
   static Member fromJson(Map<String, dynamic> json) {
     String id = json['ID'];

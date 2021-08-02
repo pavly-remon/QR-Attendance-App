@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_attendance/Provider/googlesheets.dart';
 import 'package:qr_attendance/Provider/member.dart';
 import 'package:qr_attendance/Screen/qr_scanner_screen.dart';
 
@@ -57,12 +58,9 @@ class _StartScreenState extends State<StartScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Text(
-                      _getDate(),
-                      style: TextStyle(
-                        fontSize: 40,
-                        fontFamily: 'digital-7',
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: _dateWidget(),
                     ),
                     Container(
                       height: 15,
@@ -73,6 +71,7 @@ class _StartScreenState extends State<StartScreen> {
                         color: Colors.blueAccent,
                         borderRadius: BorderRadius.all(Radius.circular(15)),
                         onPressed: () {
+                          UserSheetsApi.updateHeaders();
                           Navigator.of(context).pushNamed(QRScreen.routeName);
                         },
                         child: Padding(
@@ -106,6 +105,25 @@ class _StartScreenState extends State<StartScreen> {
   }
 }
 
-String _getDate() {
-  return DateFormat("dd MM yyyy").format(DateTime.now());
+List<Widget> _dateWidget() {
+  List<String> now =
+      DateFormat("dd MM yyyy").format(DateTime.now()).split(' ').toList();
+  return now
+      .map((e) => Card(
+            elevation: 3,
+            child: Container(
+              height: 100,
+              width: e.length > 2 ? 150 : 100,
+              child: Center(
+                child: Text(
+                  e,
+                  style: TextStyle(
+                    fontFamily: 'digital',
+                    fontSize: 50,
+                  ),
+                ),
+              ),
+            ),
+          ))
+      .toList();
 }
