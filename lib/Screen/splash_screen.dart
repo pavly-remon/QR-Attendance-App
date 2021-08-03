@@ -40,13 +40,23 @@ class _SplashScreenState extends State<SplashScreen>
       backgroundColor: Colors.black,
       body: !_isConnected
           ? AlertDialog(
-              title: Text('No Connection'),
+              title: Text(
+                'No Internet connection!',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               content: Text(
-                  'Check your Internet connection before starting this application.'),
+                'Check your Internet connection before starting this application.',
+                style: TextStyle(
+                  color: Colors.grey[700],
+                ),
+              ),
               actions: [
                 TextButton(
                   onPressed: () {
                     SystemNavigator.pop();
+                    exit(0);
                   },
                   child: Text('Ok'),
                 ),

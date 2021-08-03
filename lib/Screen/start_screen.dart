@@ -119,7 +119,8 @@ List<Widget> _dateWidget() {
                   e,
                   style: TextStyle(
                     fontFamily: 'digital',
-                    fontSize: 50,
+                    fontSize: 60,
+                    color: Colors.blueAccent,
                   ),
                 ),
               ),
