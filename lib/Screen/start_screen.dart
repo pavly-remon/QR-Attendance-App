@@ -73,7 +73,7 @@ class StartScreen extends StatelessWidget {
               elevation: 3,
               child: Container(
                 height: size.height * 0.1,
-                width: e.length > 2 ? size.width * 0.2 : size.width * 0.15,
+                width: e.length > 2 ? size.width * 0.3 : size.width * 0.2,
                 child: Center(
                   child: Text(
                     e,

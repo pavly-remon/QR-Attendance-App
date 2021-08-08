@@ -20,16 +20,6 @@ class _QRScreenState extends State<QRScreen> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-  }
-
-  @override
   void reassemble() {
     super.reassemble();
     if (Platform.isAndroid) {
@@ -44,12 +34,12 @@ class _QRScreenState extends State<QRScreen> {
     return Scaffold(
       body: StoreConnector<MemberState, List<Member>>(
         converter: (store) => store.state.members,
-        builder: (context, List<Member> statemembers) => Stack(
+        builder: (context, List<Member> stateMembers) => Stack(
           children: <Widget>[
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Expanded(flex: 4, child: _buildQrView(statemembers)),
+                Expanded(flex: 4, child: _buildQrView(stateMembers)),
               ],
             ),
             Center(
@@ -79,7 +69,7 @@ class _QRScreenState extends State<QRScreen> {
                                               fontWeight: FontWeight.bold),
                                         ),
                                         Text(
-                                          _getName(result!.code, statemembers),
+                                          _getName(result!.code, stateMembers),
                                           style: TextStyle(
                                               fontSize: 20,
                                               fontWeight: FontWeight.bold),
@@ -202,16 +192,17 @@ class _QRScreenState extends State<QRScreen> {
   }
 }
 
-String _getName(String code, List<Member> statemembers) {
-  int index = statemembers.indexWhere((element) => element.id == code);
-  return statemembers[index].name;
+String _getName(String code, List<Member> stateMembers) {
+  int index = stateMembers.indexWhere((element) => element.id == code);
+  return stateMembers[index].name;
 }
 
 void _updateMember(BuildContext context, List<Member> memberList, String code) {
   var headers = UserSheetsApi.headerRow;
   String now = UserSheetsApi.now;
   int index = memberList.indexWhere((element) => element.id == code);
-  if (!memberList[index].scanned) {
+  print(memberList);
+  if (index != -1 && !memberList[index].scanned) {
     memberList[index].scanned = !memberList[index].scanned;
     UserSheetsApi.insertValue('O', headers.length + 1, index + 2).then((value) {
       memberList[index].attendance[now] = "O";
