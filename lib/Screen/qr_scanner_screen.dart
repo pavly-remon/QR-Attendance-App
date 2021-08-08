@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:qr_attendance/Provider/googlesheets.dart';
-import 'package:qr_attendance/Provider/member.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:qr_attendance/models/googlesheets.dart';
+import 'package:qr_attendance/models/member.dart';
+import 'package:qr_attendance/redux/actions.dart';
+import 'package:qr_attendance/redux/state.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 class QRScreen extends StatefulWidget {
@@ -16,7 +18,6 @@ class _QRScreenState extends State<QRScreen> {
   Barcode? result;
   QRViewController? controller;
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-  List<Member> memberList = [];
 
   @override
   void initState() {
@@ -25,7 +26,6 @@ class _QRScreenState extends State<QRScreen> {
 
   @override
   void didChangeDependencies() {
-    memberList = Provider.of<Domain>(context).members;
     super.didChangeDependencies();
   }
 
@@ -40,98 +40,72 @@ class _QRScreenState extends State<QRScreen> {
 
   @override
   Widget build(BuildContext context) {
-    List<Member> memberList = Provider.of<Domain>(context).members;
     final size = MediaQuery.of(context).size;
-    final member = Provider.of<Domain>(context, listen: false);
     return Scaffold(
-      body: Stack(
-        children: <Widget>[
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(flex: 4, child: _buildQrView(context, memberList)),
-            ],
-          ),
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Container(
-                    width: size.width * 0.7,
-                    height: size.height * 0.2,
-                    child: Card(
-                      elevation: 3,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          result != null
-                              ? Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        'Welcome',
-                                        style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      Text(
-                                        '${member.getName(result!.code)}',
-                                        style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : Text(
-                                  'Scan a code',
-                                  style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                          Padding(
-                            padding: const EdgeInsets.all(5.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: <Widget>[
-                                Container(
-                                  margin: EdgeInsets.only(left: 3),
-                                  child: InkWell(
-                                    splashColor: Colors.white,
-                                    child: ElevatedButton(
-                                      onPressed: () async {
-                                        await controller?.toggleFlash();
-                                        setState(() {});
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        shape: CircleBorder(),
-                                        padding: EdgeInsets.all(15),
-                                        primary: Colors.blue,
-                                        onPrimary: Colors.white,
-                                      ),
-                                      child: FutureBuilder(
-                                        future: controller?.getFlashStatus(),
-                                        builder: (context, snapshot) {
-                                          return snapshot.data == true
-                                              ? Icon(Icons.flash_on)
-                                              : Icon(Icons.flash_off);
-                                          // Text('Flash: ${snapshot.data}');
-                                        },
-                                      ),
+      body: StoreConnector<MemberState, List<Member>>(
+        converter: (store) => store.state.members,
+        builder: (context, List<Member> statemembers) => Stack(
+          children: <Widget>[
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(flex: 4, child: _buildQrView(statemembers)),
+              ],
+            ),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Container(
+                      width: size.width * 0.7,
+                      height: size.height * 0.2,
+                      child: Card(
+                        elevation: 3,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            result != null
+                                ? Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          'Welcome',
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Text(
+                                          _getName(result!.code, statemembers),
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
                                     ),
+                                  )
+                                : Text(
+                                    'Scan a code',
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold),
                                   ),
-                                ),
-                                Container(
-                                  margin: EdgeInsets.all(3),
-                                  child: InkWell(
-                                    splashColor: Colors.white,
-                                    child: ElevatedButton(
+                            Padding(
+                              padding: const EdgeInsets.all(5.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: <Widget>[
+                                  Container(
+                                    margin: EdgeInsets.only(left: 3),
+                                    child: InkWell(
+                                      splashColor: Colors.white,
+                                      child: ElevatedButton(
                                         onPressed: () async {
-                                          await controller?.flipCamera();
+                                          await controller?.toggleFlash();
                                           setState(() {});
                                         },
                                         style: ElevatedButton.styleFrom(
@@ -140,26 +114,54 @@ class _QRScreenState extends State<QRScreen> {
                                           primary: Colors.blue,
                                           onPrimary: Colors.white,
                                         ),
-                                        child: Icon(Icons.flip_camera_ios)),
+                                        child: FutureBuilder(
+                                          future: controller?.getFlashStatus(),
+                                          builder: (context, snapshot) {
+                                            return snapshot.data == true
+                                                ? Icon(Icons.flash_on)
+                                                : Icon(Icons.flash_off);
+                                            // Text('Flash: ${snapshot.data}');
+                                          },
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                )
-                              ],
+                                  Container(
+                                    margin: EdgeInsets.all(3),
+                                    child: InkWell(
+                                      splashColor: Colors.white,
+                                      child: ElevatedButton(
+                                          onPressed: () async {
+                                            await controller?.flipCamera();
+                                            setState(() {});
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            shape: CircleBorder(),
+                                            padding: EdgeInsets.all(15),
+                                            primary: Colors.blue,
+                                            onPrimary: Colors.white,
+                                          ),
+                                          child: Icon(Icons.flip_camera_ios)),
+                                    ),
+                                  )
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          )
-        ],
+            )
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildQrView(BuildContext context, var member) {
+  Widget _buildQrView(List<Member> memberList) {
     // For this example we check how width or tall the device is and change the scanArea and overlay accordingly.
     var scanArea = (MediaQuery.of(context).size.width < 400 ||
             MediaQuery.of(context).size.height < 400)
@@ -170,7 +172,7 @@ class _QRScreenState extends State<QRScreen> {
     return QRView(
       key: qrKey,
       onQRViewCreated: (_) {
-        _onQRViewCreated(_, member);
+        _onQRViewCreated(_, memberList);
       },
       overlay: QrScannerOverlayShape(
           borderColor: Colors.red,
@@ -188,7 +190,7 @@ class _QRScreenState extends State<QRScreen> {
     controller.scannedDataStream.listen((scanData) {
       setState(() {
         result = scanData;
-        processCode(context, result!.code, memberList);
+        _updateMember(context, memberList, result!.code);
       });
     });
   }
@@ -200,24 +202,27 @@ class _QRScreenState extends State<QRScreen> {
   }
 }
 
-void processCode(BuildContext context, String code, List<Member> memberList) {
-  var index;
+String _getName(String code, List<Member> statemembers) {
+  int index = statemembers.indexWhere((element) => element.id == code);
+  return statemembers[index].name;
+}
+
+void _updateMember(BuildContext context, List<Member> memberList, String code) {
   var headers = UserSheetsApi.headerRow;
   String now = UserSheetsApi.now;
-  index = memberList.indexWhere((element) => code == element.id);
-  if (index != -1) {
-    if (!memberList[index].scanned) {
-      memberList[index].scanned = true;
-      UserSheetsApi.insertValue('O', headers.length + 1, index + 2)
-          .then((value) {
-        memberList[index].attendance[now] = "O";
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Done'),
-            duration: Duration(seconds: 1),
-          ),
-        );
-      });
-    }
+  int index = memberList.indexWhere((element) => element.id == code);
+  if (!memberList[index].scanned) {
+    memberList[index].scanned = !memberList[index].scanned;
+    UserSheetsApi.insertValue('O', headers.length + 1, index + 2).then((value) {
+      memberList[index].attendance[now] = "O";
+      StoreProvider.of<MemberState>(context)
+          .dispatch(UpdateMemberAttendance(memberList[index]));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Done'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+    });
   }
 }

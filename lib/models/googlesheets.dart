@@ -1,6 +1,6 @@
 import 'package:gsheets/gsheets.dart';
 import 'package:intl/intl.dart';
-import 'package:qr_attendance/Provider/member.dart';
+import 'package:qr_attendance/models/member.dart';
 
 class UserSheetsApi {
   static const _credentials = r'''
