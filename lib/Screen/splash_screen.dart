@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:qr_attendance/Provider/googlesheets.dart';
 import 'package:qr_attendance/Screen/start_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -22,11 +20,10 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     _checkConnection();
-    UserSheetsApi.init();
     _animationController =
         AnimationController(vsync: this, duration: Duration(seconds: 2));
     _animationController.repeat(reverse: true);
-    _animation = Tween(begin: 1.0, end: 20.0).animate(_animationController)
+    _animation = Tween(begin: 1.0, end: 15.0).animate(_animationController)
       ..addListener(() {
         setState(() {});
       });
@@ -93,7 +90,7 @@ class _SplashScreenState extends State<SplashScreen>
       if (result != ConnectivityResult.none) {
         setState(() {
           _isConnected = true;
-          Timer(Duration(seconds: 5), () {
+          Timer(Duration(seconds: 3), () {
             _animationController.dispose();
             Navigator.of(context).pushReplacementNamed(StartScreen.routeName);
           });

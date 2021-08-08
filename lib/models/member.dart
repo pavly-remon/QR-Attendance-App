@@ -1,6 +1,3 @@
-import 'package:flutter/widgets.dart';
-import 'package:qr_attendance/Provider/googlesheets.dart';
-
 class Member {
   String id = '';
   String name;
@@ -30,24 +27,5 @@ class Member {
     json['ID'] = this.id;
     json['Name'] = this.name;
     return json;
-  }
-}
-
-class Domain with ChangeNotifier {
-  List<Member> members = [];
-
-  Future<void> fetchData() async {
-    await UserSheetsApi.getAll().then((values) {
-      members = values;
-      notifyListeners();
-    });
-  }
-
-  String getName(String code) {
-    final index = members.indexWhere((element) => element.id == code);
-    if (index == -1)
-      return 'Unknown';
-    else
-      return members[index].name;
   }
 }
