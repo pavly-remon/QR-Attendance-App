@@ -1,11 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_redux/flutter_redux.dart';
-import 'package:qr_attendance/models/googlesheets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:qr_attendance/cubit/member_cubit.dart';
 import 'package:qr_attendance/models/member.dart';
-import 'package:qr_attendance/redux/actions.dart';
-import 'package:qr_attendance/redux/state.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 class QRScreen extends StatefulWidget {
@@ -20,6 +18,16 @@ class _QRScreenState extends State<QRScreen> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  }
+
+  @override
   void reassemble() {
     super.reassemble();
     if (Platform.isAndroid) {
@@ -30,72 +38,125 @@ class _QRScreenState extends State<QRScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final _blocProvider = BlocProvider.of<MemberCubit>(context);
     final size = MediaQuery.of(context).size;
     return Scaffold(
-      body: StoreConnector<MemberState, List<Member>>(
-        converter: (store) => store.state.members,
-        builder: (context, List<Member> stateMembers) => Stack(
-          children: <Widget>[
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(flex: 4, child: _buildQrView(stateMembers)),
-              ],
-            ),
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Container(
-                      width: size.width * 0.7,
-                      height: size.height * 0.2,
-                      child: Card(
-                        elevation: 3,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            result != null
-                                ? Center(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          'Welcome',
-                                          style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        Text(
-                                          _getName(result!.code, stateMembers),
-                                          style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                : Text(
-                                    'Scan a code',
+      body: Stack(
+        children: [
+          _buildQrView(context),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 25,
+              ),
+              IconButton(
+                onPressed: () {
+                  controller!.pauseCamera();
+                  dispose();
+                  Navigator.of(context).pop();
+                },
+                icon: Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Container(
+                    width: size.width * 0.7,
+                    height: size.height * 0.25,
+                    child: Card(
+                      elevation: 3,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: <Widget>[
+                          result != null
+                              ? BlocConsumer<MemberCubit, MemberState>(
+                                  listener: (context, state) {
+                                  int index = state.members.indexWhere(
+                                      (element) => element.id == result!.code);
+                                  if (index != -1 &&
+                                      state.members[index].scanned) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Done'),
+                                        duration: Duration(seconds: 1),
+                                      ),
+                                    );
+                                  }
+                                }, builder: (context, state) {
+                                  _blocProvider.read(result!.code!);
+                                  int index = state.members.indexWhere(
+                                      (element) => element.id == result!.code);
+                                  print(state.members);
+                                  if (index == -1) {
+                                    return Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    );
+                                  }
+                                  return Text(
+                                    _getName(result!.code!, state.members),
                                     style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold),
+                                  );
+                                })
+                              : Text(
+                                  'Scan a code',
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                          Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: <Widget>[
+                                Container(
+                                  margin: EdgeInsets.only(left: 3),
+                                  child: InkWell(
+                                    splashColor: Colors.white,
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        await controller?.toggleFlash();
+                                        setState(() {});
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        shape: CircleBorder(),
+                                        padding: EdgeInsets.all(15),
+                                        primary: Colors.blue,
+                                        onPrimary: Colors.white,
+                                      ),
+                                      child: FutureBuilder(
+                                        future: controller?.getFlashStatus(),
+                                        builder: (context, snapshot) {
+                                          return snapshot.data == true
+                                              ? Icon(Icons.flash_on)
+                                              : Icon(Icons.flash_off);
+                                          // Text('Flash: ${snapshot.data}');
+                                        },
+                                      ),
+                                    ),
                                   ),
-                            Padding(
-                              padding: const EdgeInsets.all(5.0),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: <Widget>[
-                                  Container(
-                                    margin: EdgeInsets.only(left: 3),
-                                    child: InkWell(
-                                      splashColor: Colors.white,
-                                      child: ElevatedButton(
+                                ),
+                                Container(
+                                  margin: EdgeInsets.all(3),
+                                  child: InkWell(
+                                    splashColor: Colors.white,
+                                    child: ElevatedButton(
                                         onPressed: () async {
-                                          await controller?.toggleFlash();
+                                          await controller?.flipCamera();
                                           setState(() {});
                                         },
                                         style: ElevatedButton.styleFrom(
@@ -104,54 +165,26 @@ class _QRScreenState extends State<QRScreen> {
                                           primary: Colors.blue,
                                           onPrimary: Colors.white,
                                         ),
-                                        child: FutureBuilder(
-                                          future: controller?.getFlashStatus(),
-                                          builder: (context, snapshot) {
-                                            return snapshot.data == true
-                                                ? Icon(Icons.flash_on)
-                                                : Icon(Icons.flash_off);
-                                            // Text('Flash: ${snapshot.data}');
-                                          },
-                                        ),
-                                      ),
-                                    ),
+                                        child: Icon(Icons.flip_camera_ios)),
                                   ),
-                                  Container(
-                                    margin: EdgeInsets.all(3),
-                                    child: InkWell(
-                                      splashColor: Colors.white,
-                                      child: ElevatedButton(
-                                          onPressed: () async {
-                                            await controller?.flipCamera();
-                                            setState(() {});
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            shape: CircleBorder(),
-                                            padding: EdgeInsets.all(15),
-                                            primary: Colors.blue,
-                                            onPrimary: Colors.white,
-                                          ),
-                                          child: Icon(Icons.flip_camera_ios)),
-                                    ),
-                                  )
-                                ],
-                              ),
+                                )
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            )
-          ],
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildQrView(List<Member> memberList) {
+  Widget _buildQrView(BuildContext context) {
     // For this example we check how width or tall the device is and change the scanArea and overlay accordingly.
     var scanArea = (MediaQuery.of(context).size.width < 400 ||
             MediaQuery.of(context).size.height < 400)
@@ -162,7 +195,7 @@ class _QRScreenState extends State<QRScreen> {
     return QRView(
       key: qrKey,
       onQRViewCreated: (_) {
-        _onQRViewCreated(_, memberList);
+        _onQRViewCreated(_, context);
       },
       overlay: QrScannerOverlayShape(
           borderColor: Colors.red,
@@ -173,14 +206,13 @@ class _QRScreenState extends State<QRScreen> {
     );
   }
 
-  void _onQRViewCreated(QRViewController controller, List<Member> memberList) {
+  void _onQRViewCreated(QRViewController controller, BuildContext context) {
     setState(() {
       this.controller = controller;
     });
     controller.scannedDataStream.listen((scanData) {
       setState(() {
         result = scanData;
-        _updateMember(context, memberList, result!.code);
       });
     });
   }
@@ -195,25 +227,4 @@ class _QRScreenState extends State<QRScreen> {
 String _getName(String code, List<Member> stateMembers) {
   int index = stateMembers.indexWhere((element) => element.id == code);
   return stateMembers[index].name;
-}
-
-void _updateMember(BuildContext context, List<Member> memberList, String code) {
-  var headers = UserSheetsApi.headerRow;
-  String now = UserSheetsApi.now;
-  int index = memberList.indexWhere((element) => element.id == code);
-  print(memberList);
-  if (index != -1 && !memberList[index].scanned) {
-    memberList[index].scanned = !memberList[index].scanned;
-    UserSheetsApi.insertValue('O', headers.length + 1, index + 2).then((value) {
-      memberList[index].attendance[now] = "O";
-      StoreProvider.of<MemberState>(context)
-          .dispatch(UpdateMemberAttendance(memberList[index]));
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Done'),
-          duration: Duration(seconds: 1),
-        ),
-      );
-    });
-  }
 }
