@@ -95,7 +95,6 @@ class _QRScreenState extends State<QRScreen> {
                                   _blocProvider.read(result!.code!);
                                   int index = state.members.indexWhere(
                                       (element) => element.id == result!.code);
-                                  print(state.members);
                                   if (index == -1) {
                                     return Center(
                                       child: Padding(
