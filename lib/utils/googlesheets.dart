@@ -16,7 +16,7 @@ class UserSheetsApi {
   static Future<void> init() async {
     try {
       final spreasheet = await _gsheets.spreadsheet(_spreadsheetId);
-      _sheet = await _getWorkSheet(spreasheet, title: 'e3dady');
+      _sheet = await _getWorkSheet(spreasheet, title: 'Sheet1');
       await _sheet!.values.row(1).then((value) => headerRow = value);
     } catch (e) {
       throw e;
@@ -38,8 +38,7 @@ class UserSheetsApi {
     await _sheet!.values.insertValue(now, column: headerRow.length + 1, row: 1);
   }
 
-  static Future<Worksheet> _getWorkSheet(Spreadsheet spreasheet,
-      {required String title}) async {
+  static Future<Worksheet> _getWorkSheet(Spreadsheet spreasheet, {required String title}) async {
     try {
       return await spreasheet.addWorksheet(title);
     } catch (e) {
