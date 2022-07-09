@@ -78,20 +78,8 @@ class _QRScreenState extends State<QRScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: <Widget>[
                           result != null
-                              ? BlocConsumer<MemberCubit, MemberState>(
-                                  listener: (context, state) {
-                                  int index = state.members.indexWhere(
-                                      (element) => element.id == result!.code);
-                                  if (index != -1 &&
-                                      state.members[index].scanned) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Done'),
-                                        duration: Duration(seconds: 1),
-                                      ),
-                                    );
-                                  }
-                                }, builder: (context, state) {
+                              ? BlocBuilder<MemberCubit, MemberState>(
+                                   builder: (context, state) {
                                   _blocProvider.read(result!.code!);
                                   int index = state.members.indexWhere(
                                       (element) => element.id == result!.code);
