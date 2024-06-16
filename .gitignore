@@ -47,3 +47,5 @@ app.*.map.json
 
 # Files to be ignored
 lib/utils/credentials.dart
+
+android/key.properties
