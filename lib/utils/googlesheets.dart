@@ -6,18 +6,20 @@ import 'credentials.dart';
 
 class UserSheetsApi {
   static const _credentials = CREDENTIALS;
-  static final _spreadsheetId = SPREADSHEETID;
 
   static final _gsheets = GSheets(_credentials);
   static Worksheet? _sheet;
-  static String now = DateFormat("dd-MM-yyyy").format(DateTime.now());
+  static DateTime now = new DateTime.now();
   static List<String> headerRow = [];
 
-  static Future<void> init() async {
+  static Future<void> init(String docId) async {
     try {
-      final spreasheet = await _gsheets.spreadsheet(_spreadsheetId);
+      final spreasheet = await _gsheets.spreadsheet(docId);
       _sheet = await _getWorkSheet(spreasheet, title: 'Sheet1');
-      await _sheet!.values.row(1).then((value) => headerRow = value);
+      await _sheet!.values.row(1).then((value) {
+        headerRow = value;
+        updateHeaders();
+      });
     } catch (e) {
       throw e;
     }
@@ -28,17 +30,17 @@ class UserSheetsApi {
   }
 
   static Future<void> updateHeaders() async {
-    await _sheet!.values.row(1).then((value) {
-      if (!value.contains(now)) {
-        headerRow = value;
-      } else {
-        return;
-      }
-    });
-    await _sheet!.values.insertValue(now, column: headerRow.length + 1, row: 1);
+    String currDate = DateFormat("yyyy-MM-dd").format(now);
+    var epoch = new DateTime(1899, 12, 30); //gsheet refrence Date
+    int diff = now.difference(epoch).inDays;
+    if (!headerRow.contains(diff) && !headerRow.contains("${diff}")) {
+      await _sheet!.values
+          .insertValue(currDate, column: headerRow.length + 1, row: 1);
+    }
   }
 
-  static Future<Worksheet> _getWorkSheet(Spreadsheet spreasheet, {required String title}) async {
+  static Future<Worksheet> _getWorkSheet(Spreadsheet spreasheet,
+      {required String title}) async {
     try {
       return await spreasheet.addWorksheet(title);
     } catch (e) {
@@ -56,7 +58,6 @@ class UserSheetsApi {
     required String id,
     required Map<String, dynamic> member,
   }) async {
-    print(member);
     if (_sheet == null) return false;
     return _sheet!.values.map.insertRowByKey(id, member);
   }

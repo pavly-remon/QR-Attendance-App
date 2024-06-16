@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:qr_attendance/utils/googlesheets.dart';
 
 import 'member.dart';
@@ -5,30 +6,32 @@ import 'member.dart';
 class MemberRepository {
   static List<Member> members = [];
 
-  MemberRepository() {
-    Future.delayed(Duration.zero, () async {
-      UserSheetsApi.init().then((value) async {
-        await UserSheetsApi.getAll().then((values) {
-          members = values;
-        });
-      });
-    }).catchError((e) {
-      print('Data not loaded');
-    });
+  static Future<void> initialize(String docId) async {
+    try {
+      var value = await UserSheetsApi.init(docId);
+      members = await UserSheetsApi.getAll();
+    } catch (e) {
+      throw e;
+    }
   }
 
   static Future<void> updateMembers(String code) async {
     var headers = UserSheetsApi.headerRow;
-    String now = UserSheetsApi.now;
     int index = members.indexWhere((element) => element.id == code);
-    if (index != -1 && !members[index].scanned) {
-      members[index].scanned = !members[index].scanned;
-      members[index].attendance[now] = "O";
+
+    var epoch = new DateTime(1899, 12, 30); //gsheet refrence Date
+    int diff = UserSheetsApi.now.difference(epoch).inDays;
+
+    if (index != -1 &&
+        !members[index].scanned &&
+        members[index].attendance["${diff}"] != "O") {
+      members[index].scanned = true;
+      members[index].attendance["${diff}"] = "O";
       try {
         UserSheetsApi.insertValue('O', headers.length + 1, index + 2);
       } catch (e) {
         members[index].scanned = !members[index].scanned;
-        members[index].attendance.remove(now);
+        members[index].attendance.remove("${diff}");
       }
     }
   }

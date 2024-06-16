@@ -8,6 +8,7 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 class QRScreen extends StatefulWidget {
   static const routeName = 'qr_screen';
+
   @override
   State<StatefulWidget> createState() => _QRScreenState();
 }
@@ -78,26 +79,28 @@ class _QRScreenState extends State<QRScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: <Widget>[
                           result != null
-                              ? BlocBuilder<MemberCubit, MemberState>(
-                                   builder: (context, state) {
-                                  _blocProvider.read(result!.code!);
-                                  int index = state.members.indexWhere(
-                                      (element) => element.id == result!.code);
-                                  if (index == -1) {
-                                    return Center(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: CircularProgressIndicator(),
-                                      ),
+                              ? BlocConsumer<MemberCubit, MemberState>(
+                                  listener: (context, state) {},
+                                  builder: (context, state) {
+                                    _blocProvider.read(result!.code!);
+                                    int index = state.members.indexWhere(
+                                        (element) =>
+                                            element.id == result!.code);
+                                    if (index == -1) {
+                                      return Center(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                      );
+                                    }
+                                    return Text(
+                                      "${_getName(result!.code!, state.members)} ✅",
+                                      style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold),
                                     );
-                                  }
-                                  return Text(
-                                    _getName(result!.code!, state.members),
-                                    style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold),
-                                  );
-                                })
+                                  })
                               : Text(
                                   'Scan a code',
                                   style: TextStyle(
@@ -120,10 +123,10 @@ class _QRScreenState extends State<QRScreen> {
                                         setState(() {});
                                       },
                                       style: ElevatedButton.styleFrom(
+                                        foregroundColor: Colors.white,
+                                        backgroundColor: Colors.blue,
                                         shape: CircleBorder(),
                                         padding: EdgeInsets.all(15),
-                                        primary: Colors.blue,
-                                        onPrimary: Colors.white,
                                       ),
                                       child: FutureBuilder(
                                         future: controller?.getFlashStatus(),
@@ -147,10 +150,10 @@ class _QRScreenState extends State<QRScreen> {
                                           setState(() {});
                                         },
                                         style: ElevatedButton.styleFrom(
+                                          foregroundColor: Colors.white,
+                                          backgroundColor: Colors.blue,
                                           shape: CircleBorder(),
                                           padding: EdgeInsets.all(15),
-                                          primary: Colors.blue,
-                                          onPrimary: Colors.white,
                                         ),
                                         child: Icon(Icons.flip_camera_ios)),
                                   ),

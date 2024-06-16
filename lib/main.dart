@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:qr_attendance/Screen/qr_scanner_screen.dart';
 import 'package:qr_attendance/Screen/start_screen.dart';
-import 'package:qr_attendance/models/members_repo.dart';
+
 import 'Screen/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(MyApp());
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]).then((_) {
+    runApp(MyApp());
+  });
 }
 
 class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
-    MemberRepository();
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
